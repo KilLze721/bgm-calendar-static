@@ -545,7 +545,7 @@ async function loadCalendar() {
                 </div>
             `;
 
-        card.onclick = () => {
+        card.ondblclick = () => {
             if (anime.url) {
                 window.open(anime.url, '_blank');
             }
