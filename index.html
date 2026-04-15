@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日放送 - Bangumi</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 30px;
+        }
+        h1 { color: #333; font-size: 32px; margin-left: 20px; }
+        .current-date {
+            text-align: right;
+            color: #333;
+            font-size: 14px;
+            margin-right: 20px;
+        }
+        .current-date .date { font-size: 16px; margin-bottom: 4px; font-weight: bold; }
+        .current-date .weekday { font-size: 16px; }
+        body.night-mode .current-date { color: #eee; }
+        .weekday-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .weekday-title {
+            font-size: 24px;
+            color: #ff69b4;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff69b4;
+        }
+        .anime-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+        }
+        .anime-card {
+            background: #fcfcfc;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .anime-card:hover { transform: translateY(-5px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .anime-image { width: 100%; height: 220px; object-fit: cover; }
+        .anime-info { 
+            padding: 12px; 
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .anime-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .anime-original { font-size: 12px; color: #666; margin-bottom: 8px; }
+        .anime-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #888;
+            margin-top: auto;
+            padding-top: 8px;
+        }
+        .score {
+            background: #ff69b4;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #ff69b4;
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .theme-toggle:hover { transform: scale(1.1); }
+        body.night-mode {
+            background: #1a1a2e;
+        }
+        body.night-mode h1 { color: #eee; }
+        body.night-mode .weekday-section {
+            background: #16213e;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        body.night-mode .weekday-title { color: #00ced1; border-bottom-color: #00ced1; }
+        body.night-mode .anime-card { background: #0f3460; }
+        body.night-mode .anime-name { color: #eee; }
+        body.night-mode .anime-original { color: #aaa; }
+        body.night-mode .anime-meta { color: #888; }
+        body.night-mode .loading { color: #aaa; }
+        body.night-mode .theme-toggle { background: #16213e; }
+         body.night-mode .score { background: #00ced1; color: #fff; }
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #ddd;
+        }
+        .footer a {
+            color: #ff69b4;
+            text-decoration: none;
+        }
+        .footer a:hover { text-decoration: underline; }
+        body.night-mode .footer {
+            color: #aaa;
+            border-top-color: #333;
+        }
+        body.night-mode .footer a { color: #00ced1; }
+        .site-icon {
+            width: 16px;
+            height: 16px;
+            vertical-align: text-top;
+            margin-right: 4px;
+            border-radius: 3px;
+            position: relative;
+            top: 1px;
+        }
+        @media (max-width: 1200px) {
+            .anime-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .anime-grid { grid-template-columns: repeat(2, 1fr); }
+            h1 { font-size: 24px; }
+        }
+        @media (max-width: 480px) {
+            .anime-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="切换日间/夜间模式">🌙</button>
+<div class="container">
+    <div class="header">
+        <h1>每日放送</h1>
+        <div class="current-date" id="currentDate">
+            <div class="date"></div>
+            <div class="weekday"></div>
+        </div>
+    </div>
+    <div id="content">
+        <div class="loading">加载中...</div>
+    </div>
+    <div class="footer">
+        <div>数据来源于 <a href="https://bgm.tv/" target="_blank"><img src="https://bgm.tv/img/favicon.ico" alt="" class="site-icon" onerror="this.style.display='none'"> Bangumi</a></div>
+        <div style="margin-top: 8px;">作者：<a href="https://space.bilibili.com/391114810?spm_id_from=333.788.0.0" target="_blank">KilLze</a></div>
+    </div>
+</div>
+
+<script>
+const API_BASE = 'https://api.bgm.tv/calendar';
+
+// 直接调用代理 API（不需要额外的前缀）
+async function loadCalendar() {
+    try {
+        const response = await fetch(API_BASE, {  // 直接使用 API_BASE，不要加 PROXY_URL
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'Bangumi-Calendar-App/1.0'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // 验证数据格式
+        if (!Array.isArray(data)) {
+            throw new Error('API 返回数据格式错误');
+        }
+
+        renderCalendar(data);
+    } catch (err) {
+        console.error('加载失败:', err);
+        document.getElementById('content').innerHTML =
+            `<div class="error">
+                <div>加载失败: ${err.message}</div>
+                <div style="margin-top: 10px; font-size: 14px; color: #666;">
+                    可能是网络问题或代理服务暂时不可用，请稍后刷新重试
+                </div>
+            </div>`;
+    }
+}
+
+    function renderCalendar(data) {
+        const container = document.getElementById('content');
+        container.innerHTML = '';
+
+        // 获取今天是星期几 (0=周日, 1=周一, ..., 6=周六)
+        const today = new Date().getDay();
+        
+        // 重新排序数据，让今天排在第一个
+        const sortedData = [...data].sort((a, b) => {
+            const aId = a.weekday.id; // API返回的id: 1=周一, 7=周日
+            const bId = b.weekday.id;
+            
+            // 将id转换为0-6的顺序（0=周日, 6=周六）
+            const aOrder = aId === 7 ? 0 : aId;
+            const bOrder = bId === 7 ? 0 : bId;
+            
+            // 计算距离今天的天数差
+            let aDiff = aOrder - today;
+            let bDiff = bOrder - today;
+            
+            // 如果是负数，说明是下周的日期，加7
+            if (aDiff < 0) aDiff += 7;
+            if (bDiff < 0) bDiff += 7;
+            
+            return aDiff - bDiff;
+        });
+
+        sortedData.forEach(day => {
+            const section = document.createElement('div');
+            section.className = 'weekday-section';
+
+            const title = document.createElement('h2');
+            title.className = 'weekday-title';
+            title.textContent = day.weekday.cn;
+            section.appendChild(title);
+
+            const grid = document.createElement('div');
+            grid.className = 'anime-grid';
+
+            // 检查 items 是否存在且为数组
+            if (day.items && Array.isArray(day.items) && day.items.length > 0) {
+                day.items.forEach(anime => {
+                    const card = createAnimeCard(anime);
+                    grid.appendChild(card);
+                });
+            } else {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.style.gridColumn = '1 / -1';
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.style.color = '#999';
+                emptyMsg.style.padding = '20px';
+                emptyMsg.textContent = '暂无放送信息';
+                grid.appendChild(emptyMsg);
+            }
+
+            section.appendChild(grid);
+            container.appendChild(section);
+        });
+    }
+
+    function createAnimeCard(anime) {
+        const card = document.createElement('div');
+        card.className = 'anime-card';
+
+        const displayName = anime.name_cn || anime.name;
+        const originalName = anime.name_cn ? anime.name : '';
+        const score = anime.rating ? anime.rating.score.toFixed(1) : 'N/A';
+        const image = anime.images ? anime.images.common : '';
+        const airDate = anime.air_date || '';
+
+        card.innerHTML = `
+                <img class="anime-image" src="${image}" alt="${displayName}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23eee%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2214%22 fill=%22%23999%22 text-anchor=%22middle%22 dy=%22.3em%22%3E暂无图片%3C/text%3E%3C/svg%3E'">
+                <div class="anime-info">
+                    <div class="anime-name" title="${displayName}">${displayName}</div>
+                    ${originalName ? `<div class="anime-original">${originalName}</div>` : ''}
+                    <div class="anime-meta">
+                        <span>${airDate}</span>
+                        <span class="score">${score}</span>
+                    </div>
+                </div>
+            `;
+
+        card.onclick = () => {
+            if (anime.url) {
+                window.open(anime.url, '_blank');
+            }
+        };
+
+        return card;
+    }
+
+    // 显示当前日期
+    function updateCurrentDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        const weekday = weekdays[now.getDay()];
+        
+        document.querySelector('#currentDate .date').textContent = weekday;
+        document.querySelector('#currentDate .weekday').textContent = `${year}年${month}月${day}日`;
+    }
+    updateCurrentDate();
+
+    // 主题切换功能
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    
+    // 从localStorage读取保存的主题
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'night') {
+        body.classList.add('night-mode');
+        themeToggle.textContent = '☀️';
+    }
+    
+    themeToggle.addEventListener('click', () => {
+        body.classList.toggle('night-mode');
+        const isNight = body.classList.contains('night-mode');
+        themeToggle.textContent = isNight ? '☀️' : '🌙';
+        localStorage.setItem('theme', isNight ? 'night' : 'day');
+    });
+
+    // 页面加载时获取数据
+    loadCalendar();
+
+    // 每5分钟自动刷新
+    setInterval(loadCalendar, 5 * 60 * 1000);
+</script>
+</body>
+</html>
