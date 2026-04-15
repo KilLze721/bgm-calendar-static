@@ -10,6 +10,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f5f5f5;
             padding: 20px;
+            transition: background-color 0.5s ease;
         }
         .container { max-width: 1200px; margin: 0 auto; }
         .header {
@@ -18,60 +19,25 @@
             align-items: flex-end;
             margin-bottom: 30px;
         }
-        h1 { color: #333; font-size: 32px; margin-left: 20px; }
+        h1 { color: #333; font-size: 32px; margin-left: 20px; transition: color 0.5s ease; }
         .current-date {
             text-align: right;
             color: #333;
             font-size: 14px;
             margin-right: 20px;
+            transition: color 0.5s ease;
         }
         .current-date .date { font-size: 16px; margin-bottom: 4px; font-weight: bold; }
         .current-date .weekday { font-size: 16px; }
         body.night-mode .current-date { color: #eee; }
-        .sort-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 999;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .sort-toggle button {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .sort-toggle button.active {
-            background: #ff69b4;
-            color: white;
-            border-color: #ff69b4;
-        }
-        body.night-mode .sort-toggle {
-            background: #16213e;
-        }
-        body.night-mode .sort-toggle button {
-            background: #0f3460;
-            color: #eee;
-            border-color: #333;
-        }
-        body.night-mode .sort-toggle button.active {
-            background: #00ced1;
-            border-color: #00ced1;
-        }
+
         .weekday-section {
             background: white;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: background-color 0.5s ease, box-shadow 0.5s ease;
         }
         .weekday-title {
             font-size: 24px;
@@ -79,6 +45,7 @@
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid #ff69b4;
+            transition: color 0.5s ease, border-bottom-color 0.5s ease;
         }
         .anime-grid {
             display: grid;
@@ -89,7 +56,7 @@
             background: #fcfcfc;
             border-radius: 8px;
             overflow: hidden;
-            transition: transform 0.2s;
+            transition: transform 0.2s, background-color 0.5s ease;
             cursor: pointer;
             display: flex;
             flex-direction: column;
@@ -108,8 +75,9 @@
             color: #333;
             margin-bottom: 5px;
             word-wrap: break-word;
+            transition: color 0.5s ease;
         }
-        .anime-original { font-size: 12px; color: #666; margin-bottom: 8px; }
+        .anime-original { font-size: 12px; color: #666; margin-bottom: 8px; transition: color 0.5s ease; }
         .anime-meta {
             display: flex;
             justify-content: space-between;
@@ -118,6 +86,7 @@
             color: #888;
             margin-top: auto;
             padding-top: 8px;
+            transition: color 0.5s ease;
         }
         .score {
             background: #ff69b4;
@@ -125,21 +94,24 @@
             padding: 2px 8px;
             border-radius: 4px;
             font-weight: bold;
+            transition: background-color 0.5s ease;
         }
         .loading {
             text-align: center;
             padding: 50px;
             font-size: 18px;
             color: #666;
+            transition: color 0.5s ease;
         }
         .error {
             text-align: center;
             padding: 50px;
             color: #ff69b4;
+            transition: color 0.5s ease;
         }
         .theme-toggle {
             position: fixed;
-            top: 20px;
+            bottom: 20px;
             right: 20px;
             background: white;
             border: none;
@@ -153,10 +125,51 @@
             z-index: 1000;
         }
         .theme-toggle:hover { transform: scale(1.1); }
+        body.night-mode .theme-toggle { background: #16213e; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            transition: border-bottom-color 0.5s ease;
+        }
+        .sort-toggle {
+            margin: 0 20px 20px 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .sort-toggle button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .sort-toggle button.active {
+            background: #ff69b4;
+            color: white;
+            border-color: #ff69b4;
+        }
+
+        body.night-mode .sort-toggle button {
+            background: #0f3460;
+            color: #eee;
+            border-color: #333;
+        }
+        body.night-mode .sort-toggle button.active {
+            background: #00ced1;
+            border-color: #00ced1;
+        }
         body.night-mode {
             background: #1a1a2e;
         }
         body.night-mode h1 { color: #eee; }
+        body.night-mode .header {
+            border-bottom-color: #333;
+        }
         body.night-mode .weekday-section {
             background: #16213e;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -176,10 +189,12 @@
             color: #666;
             font-size: 14px;
             border-top: 1px solid #ddd;
+            transition: color 0.5s ease, border-top-color 0.5s ease;
         }
         .footer a {
             color: #ff69b4;
             text-decoration: none;
+            transition: color 0.5s ease;
         }
         .footer a:hover { text-decoration: underline; }
         body.night-mode .footer {
@@ -204,7 +219,7 @@
             h1 { font-size: 24px; }
         }
         @media (max-width: 480px) {
-            .anime-grid { grid-template-columns: 1fr; }
+            .anime-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -219,8 +234,8 @@
             </div>
         </div>
         <div class="sort-toggle" id="sortToggle">
-            <button id="sortFixed" class="active">固定排序</button>
-            <button id="sortToday">动态排序</button>
+            <button id="sortFixed" class="active">按时间排序</button>
+            <button id="sortToday">按今日排序</button>
         </div>
     <div id="content">
         <div class="loading">加载中...</div>
@@ -256,6 +271,8 @@ async function loadCalendar() {
             throw new Error('API 返回数据格式错误');
         }
 
+
+
         renderCalendar(data);
     } catch (err) {
         console.error('加载失败:', err);
@@ -271,8 +288,15 @@ async function loadCalendar() {
 
     function renderCalendar(data) {
         const container = document.getElementById('content');
+        
+        // 立即清空并重新渲染，不使用动画
         container.innerHTML = '';
-
+        renderContent(data);
+    }
+    
+    function renderContent(data) {
+        const container = document.getElementById('content');
+        
         // 获取当前激活的排序方式
         const sortFixedBtn = document.getElementById('sortFixed');
         const sortType = sortFixedBtn.classList.contains('active') ? 'fixed' : 'today';
@@ -347,7 +371,7 @@ async function loadCalendar() {
         const displayName = anime.name_cn || anime.name;
         const originalName = anime.name_cn ? anime.name : '';
         const score = anime.rating ? anime.rating.score.toFixed(1) : 'N/A';
-        const image = anime.images ? anime.images.common : '';
+        const image = anime.images ? (anime.images.large || anime.images.common) : '';
         const airDate = anime.air_date || '';
 
         card.innerHTML = `
@@ -421,6 +445,8 @@ async function loadCalendar() {
         sortTodayBtn.classList.remove('active');
         loadCalendar();
     });
+
+
 
     // 每5分钟自动刷新
     setInterval(loadCalendar, 5 * 60 * 1000);
