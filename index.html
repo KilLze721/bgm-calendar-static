@@ -28,6 +28,44 @@
         .current-date .date { font-size: 16px; margin-bottom: 4px; font-weight: bold; }
         .current-date .weekday { font-size: 16px; }
         body.night-mode .current-date { color: #eee; }
+        .sort-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .sort-toggle button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .sort-toggle button.active {
+            background: #ff69b4;
+            color: white;
+            border-color: #ff69b4;
+        }
+        body.night-mode .sort-toggle {
+            background: #16213e;
+        }
+        body.night-mode .sort-toggle button {
+            background: #0f3460;
+            color: #eee;
+            border-color: #333;
+        }
+        body.night-mode .sort-toggle button.active {
+            background: #00ced1;
+            border-color: #00ced1;
+        }
         .weekday-section {
             background: white;
             border-radius: 12px;
@@ -69,9 +107,7 @@
             font-weight: bold;
             color: #333;
             margin-bottom: 5px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            word-wrap: break-word;
         }
         .anime-original { font-size: 12px; color: #666; margin-bottom: 8px; }
         .anime-meta {
@@ -175,13 +211,17 @@
 <body>
 <button class="theme-toggle" id="themeToggle" title="切换日间/夜间模式">🌙</button>
 <div class="container">
-    <div class="header">
-        <h1>每日放送</h1>
-        <div class="current-date" id="currentDate">
-            <div class="date"></div>
-            <div class="weekday"></div>
+        <div class="header">
+            <h1>每日放送</h1>
+            <div class="current-date" id="currentDate">
+                <div class="date"></div>
+                <div class="weekday"></div>
+            </div>
         </div>
-    </div>
+        <div class="sort-toggle" id="sortToggle">
+            <button id="sortFixed" class="active">固定排序</button>
+            <button id="sortToday">动态排序</button>
+        </div>
     <div id="content">
         <div class="loading">加载中...</div>
     </div>
@@ -233,28 +273,39 @@ async function loadCalendar() {
         const container = document.getElementById('content');
         container.innerHTML = '';
 
-        // 获取今天是星期几 (0=周日, 1=周一, ..., 6=周六)
-        const today = new Date().getDay();
+        // 获取当前激活的排序方式
+        const sortFixedBtn = document.getElementById('sortFixed');
+        const sortType = sortFixedBtn.classList.contains('active') ? 'fixed' : 'today';
         
-        // 重新排序数据，让今天排在第一个
-        const sortedData = [...data].sort((a, b) => {
-            const aId = a.weekday.id; // API返回的id: 1=周一, 7=周日
-            const bId = b.weekday.id;
-            
-            // 将id转换为0-6的顺序（0=周日, 6=周六）
-            const aOrder = aId === 7 ? 0 : aId;
-            const bOrder = bId === 7 ? 0 : bId;
-            
-            // 计算距离今天的天数差
-            let aDiff = aOrder - today;
-            let bDiff = bOrder - today;
-            
-            // 如果是负数，说明是下周的日期，加7
-            if (aDiff < 0) aDiff += 7;
-            if (bDiff < 0) bDiff += 7;
-            
-            return aDiff - bDiff;
-        });
+        let sortedData;
+        
+        if (sortType === 'today') {
+            // 根据今天排序
+            const today = new Date().getDay();
+            sortedData = [...data].sort((a, b) => {
+                const aId = a.weekday.id; // API返回的id: 1=周一, 7=周日
+                const bId = b.weekday.id;
+                
+                // 将id转换为0-6的顺序（0=周日, 6=周六）
+                const aOrder = aId === 7 ? 0 : aId;
+                const bOrder = bId === 7 ? 0 : bId;
+                
+                // 计算距离今天的天数差
+                let aDiff = aOrder - today;
+                let bDiff = bOrder - today;
+                
+                // 如果是负数，说明是下周的日期，加7
+                if (aDiff < 0) aDiff += 7;
+                if (bDiff < 0) bDiff += 7;
+                
+                return aDiff - bDiff;
+            });
+        } else {
+            // 固定周一到周日排序
+            sortedData = [...data].sort((a, b) => {
+                return a.weekday.id - b.weekday.id;
+            });
+        }
 
         sortedData.forEach(day => {
             const section = document.createElement('div');
@@ -354,6 +405,22 @@ async function loadCalendar() {
 
     // 页面加载时获取数据
     loadCalendar();
+
+    // 排序按钮点击事件
+    const sortTodayBtn = document.getElementById('sortToday');
+    const sortFixedBtn = document.getElementById('sortFixed');
+    
+    sortTodayBtn.addEventListener('click', () => {
+        sortTodayBtn.classList.add('active');
+        sortFixedBtn.classList.remove('active');
+        loadCalendar();
+    });
+    
+    sortFixedBtn.addEventListener('click', () => {
+        sortFixedBtn.classList.add('active');
+        sortTodayBtn.classList.remove('active');
+        loadCalendar();
+    });
 
     // 每5分钟自动刷新
     setInterval(loadCalendar, 5 * 60 * 1000);
